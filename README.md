@@ -2,6 +2,9 @@
 
 This project demonstrates how to build a **real-time AWS Cost Explorer Agent** using the **Strands Framework**, **Model Context Protocol (MCP)**, and **AWS Lambda**.
 
+
+<img width="1024" height="1536" alt="ChatGPT Image Oct 1, 2025, 12_17_18 AM" src="https://github.com/user-attachments/assets/b364e2be-ebfd-4d3f-9139-39dcc80e4cbb" />
+
 Ask questions in plain English, like:
 - "What is my spend from 2025-09-01 to 2025-10-01?"
 - "Forecast my spend from 2025-10-01 to 2025-11-01"
@@ -99,6 +102,10 @@ You’ll get back JSON like this:
 ```
 
 ---
+
+<img width="1024" height="1024" alt="ChatGPT Image Sep 30, 2025, 11_44_26 PM" src="https://github.com/user-attachments/assets/cda55feb-e0b4-49d9-a7ca-2e5e1b85bbb4" />
+<img width="1026" height="761" alt="Screenshot 2025-09-30 234216" src="https://github.com/user-attachments/assets/a37dcde5-f2fb-43d5-b6d9-6c4dee42bbb7" />
+
 
 ## 📖 References
 - [AWS Strands Blog](https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/)
