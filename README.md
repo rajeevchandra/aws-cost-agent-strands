@@ -1,53 +1,110 @@
-# Strands + MCP Cost Explorer (Bedrock) — Lambda ZIP
+# AWS Cost Explorer Agent (Strands + MCP + Lambda)
 
+This project demonstrates how to build a **real-time AWS Cost Explorer Agent** using the **Strands Framework**, **Model Context Protocol (MCP)**, and **AWS Lambda**.
 
+Ask questions in plain English, like:
+- "What is my spend from 2025-09-01 to 2025-10-01?"
+- "Forecast my spend from 2025-10-01 to 2025-11-01"
 
-This gives you:
-- `mcp_cost_server_safe.py`: MCP-style server calling AWS Cost Explorer (summary + forecast)
-- `bedrock_model.py`: provider-aware Bedrock wrapper (works with `openai.gpt-oss-120b-1:0` or Anthropic if enabled)
-- `agent.py`: tiny agent that calls the MCP server, then summarizes with Bedrock
-- `strands_integration.py`: a **Strands-like** shim so you can mimic a Strands agent locally
-- `lambda_handler.py`: deploy behind API Gateway or Function URL
+And get both structured JSON + a plain-English summary.
 
-- <img width="1024" height="1536" alt="ChatGPT Image Oct 1, 2025, 12_17_18 AM" src="https://github.com/user-attachments/assets/ed450e42-2690-4df6-b8c6-862b963668c0" />
+---
 
+## 🚀 Architecture
 
-## Local test (Windows CMD)
+1. **Client** → Sends a query via API Gateway or Lambda Function URL  
+2. **AWS Lambda** → Runs the Strands Agent  
+3. **MCP Cost Server** → Calls AWS Cost Explorer APIs (`GetCostAndUsage`, `GetCostForecast`)  
+4. **Amazon Bedrock** → Converts raw data into natural-language summaries  
+5. **Response** → JSON with `tool_data` and `summary`
+
+---
+
+## 📦 Setup
+
+### 1. Clone repo
+```bash
+git clone https://github.com/<your-username>/aws-cost-agent-strands.git
+cd aws-cost-agent-strands
 ```
-set AWS_REGION=us-east-1
-set AWS_DEFAULT_REGION=us-east-1
-set BEDROCK_REGION=us-east-1
-set BEDROCK_MODEL_ID=openai.gpt-oss-120b-1:0 ( Any model)
-set MCP_COMMAND=python mcp_cost_server_safe.py
-set GROUP_BY=SERVICE,LINKED_ACCOUNT
-set METRIC=UnblendedCost
 
+### 2. Create virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate   # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
+### 3. Local test
+```bash
 python -c "from agent import handle; print(handle('What is my spend from 2025-09-01 to 2025-10-01?'))"
 ```
 
-## Strands-style entry (shim)
+---
+
+## 🚀 Deployment (Windows with Batch Script)
+
+This project includes a ready-to-use batch file for deploying the Lambda function and setting up API Gateway.
+
+### 1. Prerequisites
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) installed and configured  
+- Python 3.11  
+- IAM role with permissions for:  
+  - `ce:GetCostAndUsage`  
+  - `ce:GetCostForecast`  
+  - `bedrock:InvokeModel`  
+  - `logs:*`  
+  - `lambda:*`  
+  - `apigateway:*`  
+
+### 2. Package the code
+Zip up the function code (already structured for Lambda):
+```bat
+powershell -Command "Compress-Archive -Path * -DestinationPath function.zip -Force"
 ```
-python -c "from strands_integration import run_with_strands_like_agent as r; print(r('What is my spend from 2025-09-01 to 2025-10-01?'))"
+
+### 3. Run the deploy script
+```bat
+deploy-cost-agent.bat
 ```
 
-## Real Strands integration (when you install their SDK)
-```python
-from strands.agents import Agent
-from strands.tools.mcp import MCPToolClient
+The script will:
+1. Create or update the IAM role (`lambda-cost-agent-role`).
+2. Deploy/update the Lambda function (`cost-agent`).
+3. Configure environment variables for Bedrock + Cost Explorer.
+4. Create or update an API Gateway endpoint.
+5. Output the API Gateway URL for testing.
 
-cost_tool = MCPToolClient(name="cost", transport="stdio", command=["python","mcp_cost_server_safe.py"])
-agent = Agent(name="finops", tools=[cost_tool], instructions="You are an AWS cost assistant.")
-agent.run("What is my spend from 2025-09-01 to 2025-10-01?")
+### 4. Test the endpoint
+Once deployed, you can test with `curl` or Postman:
+```bat
+curl -X POST "https://<api-id>.execute-api.us-east-1.amazonaws.com/" ^
+ -H "Content-Type: application/json" ^
+ -d "{\"query\":\"What is my spend from 2025-09-01 to 2025-10-01?\"}"
 ```
 
-## Lambda deploy
-- Runtime: Python 3.11
-- Handler: `lambda_handler.lambda_handler`
-- Env: `BEDROCK_REGION`, `BEDROCK_MODEL_ID`, `MCP_COMMAND=python mcp_cost_server_safe.py` (+ optional `GROUP_BY`, `METRIC`, `GRANULARITY`)
-- IAM: `bedrock:InvokeModel*`, `ce:GetCostAndUsage`, `ce:GetCostForecast`, `ce:GetDimensionValues`
+You’ll get back JSON like this:
+```json
+{
+  "tool_data": {
+    "currency": "USD",
+    "total": 17.40,
+    "period": { "start": "2025-09-01", "end": "2025-10-01" },
+    "grouped": [
+      { "service": "Amazon Cognito", "amount": 15.59, "unit": "USD" }
+    ]
+  },
+  "summary": "Most of your spend (~90%) is from Cognito. Tax and EC2 are small. Others are negligible."
+}
+```
 
-- <img width="1024" height="1024" alt="ChatGPT Image Sep 30, 2025, 11_44_26 PM" src="https://github.com/user-attachments/assets/6dafd886-ee44-4ccf-b29a-64cb28797c06" />
+---
 
+## 📖 References
+- [AWS Strands Blog](https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/)
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
-<img width="1026" height="761" alt="Screenshot 2025-09-30 234216" src="https://github.com/user-attachments/assets/51c292dd-46f2-4892-9ecd-623f38c3a595" />
+---
 
+## 📝 License
+MIT
