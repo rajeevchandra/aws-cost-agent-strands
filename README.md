@@ -1,12 +1,42 @@
-# AWS Cost Explorer Agent (Strands + MCP + Lambda)
+# Strands + MCP Cost Explorer (Bedrock) — Lambda ZIP
 
-This project demonstrates how to build a **real-time AWS Cost Explorer Agent** using the **Strands Framework**, **Model Context Protocol (MCP)**, and **AWS Lambda**.
+This gives you:
+- `mcp_cost_server_safe.py`: MCP-style server calling AWS Cost Explorer (summary + forecast)
+- `bedrock_model.py`: provider-aware Bedrock wrapper (works with `openai.gpt-oss-120b-1:0` or Anthropic if enabled)
+- `agent.py`: tiny agent that calls the MCP server, then summarizes with Bedrock
+- `strands_integration.py`: a **Strands-like** shim so you can mimic a Strands agent locally
+- `lambda_handler.py`: deploy behind API Gateway or Function URL
 
-## Setup
-1. Clone repo
-2. Create venv and install requirements
-3. Test locally: `python -c "from agent import handle; print(handle('What is my spend?'))"`
-4. Deploy with provided scripts
+## Local test (Windows CMD)
+```
+set AWS_REGION=us-east-1
+set AWS_DEFAULT_REGION=us-east-1
+set BEDROCK_REGION=us-east-1
+set BEDROCK_MODEL_ID=openai.gpt-oss-120b-1:0 ( Any model)
+set MCP_COMMAND=python mcp_cost_server_safe.py
+set GROUP_BY=SERVICE,LINKED_ACCOUNT
+set METRIC=UnblendedCost
 
-## License
-MIT
+python -c "from agent import handle; print(handle('What is my spend from 2025-09-01 to 2025-10-01?'))"
+```
+
+## Strands-style entry (shim)
+```
+python -c "from strands_integration import run_with_strands_like_agent as r; print(r('What is my spend from 2025-09-01 to 2025-10-01?'))"
+```
+
+## Real Strands integration (when you install their SDK)
+```python
+from strands.agents import Agent
+from strands.tools.mcp import MCPToolClient
+
+cost_tool = MCPToolClient(name="cost", transport="stdio", command=["python","mcp_cost_server_safe.py"])
+agent = Agent(name="finops", tools=[cost_tool], instructions="You are an AWS cost assistant.")
+agent.run("What is my spend from 2025-09-01 to 2025-10-01?")
+```
+
+## Lambda deploy
+- Runtime: Python 3.11
+- Handler: `lambda_handler.lambda_handler`
+- Env: `BEDROCK_REGION`, `BEDROCK_MODEL_ID`, `MCP_COMMAND=python mcp_cost_server_safe.py` (+ optional `GROUP_BY`, `METRIC`, `GRANULARITY`)
+- IAM: `bedrock:InvokeModel*`, `ce:GetCostAndUsage`, `ce:GetCostForecast`, `ce:GetDimensionValues`
