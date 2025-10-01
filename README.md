@@ -9,6 +9,9 @@ This gives you:
 - `strands_integration.py`: a **Strands-like** shim so you can mimic a Strands agent locally
 - `lambda_handler.py`: deploy behind API Gateway or Function URL
 
+- <img width="1024" height="1536" alt="ChatGPT Image Oct 1, 2025, 12_17_18 AM" src="https://github.com/user-attachments/assets/ed450e42-2690-4df6-b8c6-862b963668c0" />
+
+
 ## Local test (Windows CMD)
 ```
 set AWS_REGION=us-east-1
