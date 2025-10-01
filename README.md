@@ -1,5 +1,7 @@
 # Strands + MCP Cost Explorer (Bedrock) — Lambda ZIP
 
+
+
 This gives you:
 - `mcp_cost_server_safe.py`: MCP-style server calling AWS Cost Explorer (summary + forecast)
 - `bedrock_model.py`: provider-aware Bedrock wrapper (works with `openai.gpt-oss-120b-1:0` or Anthropic if enabled)
@@ -40,3 +42,9 @@ agent.run("What is my spend from 2025-09-01 to 2025-10-01?")
 - Handler: `lambda_handler.lambda_handler`
 - Env: `BEDROCK_REGION`, `BEDROCK_MODEL_ID`, `MCP_COMMAND=python mcp_cost_server_safe.py` (+ optional `GROUP_BY`, `METRIC`, `GRANULARITY`)
 - IAM: `bedrock:InvokeModel*`, `ce:GetCostAndUsage`, `ce:GetCostForecast`, `ce:GetDimensionValues`
+
+- <img width="1024" height="1024" alt="ChatGPT Image Sep 30, 2025, 11_44_26 PM" src="https://github.com/user-attachments/assets/6dafd886-ee44-4ccf-b29a-64cb28797c06" />
+
+
+<img width="1026" height="761" alt="Screenshot 2025-09-30 234216" src="https://github.com/user-attachments/assets/51c292dd-46f2-4892-9ecd-623f38c3a595" />
+
