@@ -106,6 +106,23 @@ You’ll get back JSON like this:
 <img width="1024" height="1024" alt="ChatGPT Image Sep 30, 2025, 11_44_26 PM" src="https://github.com/user-attachments/assets/cda55feb-e0b4-49d9-a7ca-2e5e1b85bbb4" />
 <img width="1026" height="761" alt="Screenshot 2025-09-30 234216" src="https://github.com/user-attachments/assets/a37dcde5-f2fb-43d5-b6d9-6c4dee42bbb7" />
 
+## 🗑️ Cleaning Up (delete-cost-agent.bat)
+
+If you want to **remove all deployed resources** (API Gateway, Lambda function, CloudWatch log group, and IAM role), 
+you can use the provided cleanup script:
+
+```powershell
+delete-cost-agent.bat
+```
+
+This script will:
+1. Find and delete any API Gateway named `cost-agent-api` (handles multiple IDs safely).
+2. Delete the Lambda function `cost-agent` and its Function URL (if present).
+3. Delete the associated CloudWatch log group.
+4. Detach policies and remove the IAM role `lambda-cost-agent-role`.
+
+⚠️ **Warning**: This will permanently delete the resources. Make sure nothing else depends on this role or function.
+
 
 ## 📖 References
 - [AWS Strands Blog](https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/)
